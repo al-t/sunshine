@@ -17,8 +17,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildTypes.each {
+                it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', "\"cda3b6cd5e73c186ba7220ee4bb8a5f6\""
+    }
 }
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:23.1.1'
