@@ -1,5 +1,6 @@
 package ru.javabreeze.android.sunshine.app;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,8 +11,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import org.json.JSONException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,15 +24,37 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * Created by Алексей on 26.05.2016.
  */
 public class ForecastFragment extends Fragment {
 
+    private final String LOG_TAG = "Sunshine App";
+
+    //private final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
+    //private final String API_KEY = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+    private final String DEFAULT_POSTCODE = "MOSCOW";
+
     private ArrayAdapter<String> adapter;
+
+    private Uri.Builder getUriBuilder() {
+        return new Uri.Builder().scheme("http")
+                .authority("api.openweathermap.org")
+                .appendPath("data")
+                .appendPath("2.5")
+                .appendPath("forecast")
+                .appendPath("daily")
+                .appendQueryParameter("mode", "json")
+                .appendQueryParameter("units", "metric")
+                .appendQueryParameter("cnt", "7")
+                .appendQueryParameter("APPID", BuildConfig.OPEN_WEATHER_MAP_API_KEY);
+    }
 
     String[] stringList = {
             "Today - Sunny - 88/63",
@@ -37,7 +64,13 @@ public class ForecastFragment extends Fragment {
             "Fri - Foggy - 70/46",
             "Sat - Sunny - 77/68"
     };
+
+    String[] forecastResults;
+    String[] newForecastResults;
+
     ArrayList<String> weekForecast = new ArrayList<>(Arrays.asList(stringList));
+
+    private View view;
 
     public ForecastFragment() {
     }
@@ -51,6 +84,7 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
+            new FetchWeatherTask().execute(DEFAULT_POSTCODE);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -66,20 +100,18 @@ public class ForecastFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        view = inflater.inflate(R.layout.fragment_main, container, false);
 
-        adapter = new ArrayAdapter<>(getActivity(),
+        /*adapter = new ArrayAdapter<>(getActivity(),
                 R.layout.list_item_forecast, R.id.list_item_forecast_textview, weekForecast);
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
 
-        listView.setAdapter(adapter);
+        listView.setAdapter(adapter);*/
 
-        String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
-        String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+        new FetchWeatherTask().execute(DEFAULT_POSTCODE);
 
-        new FetchWeatherTask().execute(baseUrl.concat(apiKey));
-        return rootView;
+        return view;
     }
 
     // Uses AsyncTask to create a task away from the main UI thread. This task takes a
@@ -88,20 +120,20 @@ public class ForecastFragment extends Fragment {
     // an InputStream. Finally, the InputStream is converted into a string, which is
     // displayed in the UI by the AsyncTask's onPostExecute method.
     private class FetchWeatherTask extends AsyncTask<String, Void, String> {
+
+        String forecastJsonStr = null;
+
         @Override
         protected String doInBackground(String... urls) {
-
-            // params comes from the execute() call: params[0] is the url.
-            downloadUrl(urls[0]);
-            return null;
+            String url = getUriBuilder().appendQueryParameter("q", urls[0]).build().toString();
+            //Log.v("Url to download: ", url);
+            downloadUrl(url);
+            return forecastJsonStr;
         }
 
         private void downloadUrl(String stringUrl) {
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
-
-            // Will contain the raw JSON response as a string.
-            String forecastJsonStr = null;
 
             try {
                 // Construct the URL for the OpenWeatherMap query
@@ -137,6 +169,8 @@ public class ForecastFragment extends Fragment {
                     return;
                 }
                 forecastJsonStr = buffer.toString();
+                //Log.v(LOG_TAG, forecastJsonStr);
+
             } catch (IOException e) {
                 Log.e("PlaceholderFragment", "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attemping
@@ -159,9 +193,58 @@ public class ForecastFragment extends Fragment {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            //textView.setText(result);
+            if (result != null) {
+                newForecastResults = new String[7];
+
+                for (int i = 0; i < newForecastResults.length; i++) {
+                    String weather = null;
+                    double min = -200, max = -200;
+                    try {
+                        //time = WeatherDataParser.getTime(result, i);
+                        weather = WeatherDataParser.getWeatherConditionForDay(result, i);
+                        min = WeatherDataParser.getMinTemperatureForDay(result, i);
+                        max = WeatherDataParser.getMaxTemperatureForDay(result, i);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    //create a Gregorian Calendar, which is in current date
+                    GregorianCalendar gc = new GregorianCalendar();
+                    //add i dates to current date of calendar
+                    gc.add(GregorianCalendar.DATE, i);
+                    //get that date, format it, and "save" it on variable day
+                    Date time = gc.getTime();
+                    SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE, MMM d");
+                    String day = shortenedDateFormat.format(time);
+
+                    if (weather == null) weather = "n/a";
+
+                    newForecastResults[i] = day + " - " + weather + " - " +
+                            ((max > -200)?/*Math.round(max)*/max:"-") + "/" +
+                            ((min > -200)?/*Math.round(min)*/min:"-");
+                }
+            }
+            updateWeather();
         }
 
 
+    }
+
+    private void updateWeather() {
+        adapter = new ArrayAdapter<>(getActivity(),
+                R.layout.list_item_forecast, R.id.list_item_forecast_textview, newForecastResults);
+
+        ListView listView = (ListView) view.findViewById(R.id.listview_forecast);
+
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                /*Log.v(Constants.LOG_TAG, "Clicked item: " + position + " - "
+                        + newForecastResults[position]);*/
+                Toast.makeText(getContext(), newForecastResults[position], Toast.LENGTH_SHORT)
+                        .show();
+            }
+        });
     }
 }
