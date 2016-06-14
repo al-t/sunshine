@@ -1,5 +1,6 @@
 package ru.javabreeze.android.sunshine.app;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -220,8 +221,8 @@ public class ForecastFragment extends Fragment {
                     if (weather == null) weather = "n/a";
 
                     newForecastResults[i] = day + " - " + weather + " - " +
-                            ((max > -200)?/*Math.round(max)*/max:"-") + "/" +
-                            ((min > -200)?/*Math.round(min)*/min:"-");
+                            ((max > -200)?Math.round(max):"-") + "/" +
+                            ((min > -200)?Math.round(min):"-");
                 }
             }
             updateWeather();
@@ -242,8 +243,11 @@ public class ForecastFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 /*Log.v(Constants.LOG_TAG, "Clicked item: " + position + " - "
                         + newForecastResults[position]);*/
-                Toast.makeText(getContext(), newForecastResults[position], Toast.LENGTH_SHORT)
-                        .show();
+                /*Toast.makeText(getContext(), newForecastResults[position], Toast.LENGTH_SHORT)
+                        .show();*/
+                Intent intent = new Intent(getContext(), DetailActivity.class)
+                        .putExtra(Constants.FORECAST, newForecastResults[position]);
+                startActivity(intent);
             }
         });
     }

@@ -5,4 +5,5 @@ package ru.javabreeze.android.sunshine.app;
  */
 public class Constants {
     public final static String LOG_TAG = "Sunshine App";
+    public final static String FORECAST = "FORECAST";
 }
