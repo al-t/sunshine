@@ -1,10 +1,15 @@
 package ru.javabreeze.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ActionProvider;
+import android.support.v4.view.MenuItemCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ShareActionProvider;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -30,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * Created by Алексей on 26.05.2016.
@@ -40,9 +47,9 @@ public class ForecastFragment extends Fragment {
 
     //private final String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
     //private final String API_KEY = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
-    private final String DEFAULT_POSTCODE = "MOSCOW";
 
     private ArrayAdapter<String> adapter;
+    private ActionProvider mShareActionProvider;
 
     private Uri.Builder getUriBuilder() {
         return new Uri.Builder().scheme("http")
@@ -52,8 +59,8 @@ public class ForecastFragment extends Fragment {
                 .appendPath("forecast")
                 .appendPath("daily")
                 .appendQueryParameter("mode", "json")
-                .appendQueryParameter("units", "metric")
                 .appendQueryParameter("cnt", "7")
+                .appendQueryParameter("units", "metric")
                 .appendQueryParameter("APPID", BuildConfig.OPEN_WEATHER_MAP_API_KEY);
     }
 
@@ -79,16 +86,52 @@ public class ForecastFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.forecastfragment, menu);
+
+        // Locate MenuItem with ShareActionProvider
+        MenuItem item = menu.findItem(R.id.menu_item_share);
+
+        // Fetch and store ShareActionProvider
+        mShareActionProvider = (ActionProvider) MenuItemCompat.getActionProvider(item);
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            new FetchWeatherTask().execute(DEFAULT_POSTCODE);
+            sendWeatherRequest();
             return true;
+        } else if (id == R.id.action_settings) {
+            Intent intent = new Intent(getContext(), SettingsActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.action_show_location_on_map) {
+            Uri location = Uri.parse("geo:0,0?q=" + getLocationFromPreferences());
+            Intent showOnMap = new Intent(Intent.ACTION_VIEW, location);
+            PackageManager packageManager = getActivity().getPackageManager();
+            List activities = packageManager.queryIntentActivities(showOnMap,
+                    PackageManager.MATCH_DEFAULT_ONLY);
+            boolean isIntentSafe = activities.size() > 0;
+            if (isIntentSafe) {
+                startActivity(showOnMap);
+            } else {
+                Toast.makeText(getContext(), getString(R.string.no_map_application),
+                        Toast.LENGTH_SHORT).show();
+            }
+        } else if (id == R.id.menu_item_share) {
+            Intent myShareIntent = new Intent(Intent.ACTION_SEND);
+            myShareIntent.setType("text/plain");
+            myShareIntent.putExtra(Intent.EXTRA_STREAM, newForecastResults[0] + " #SunshineApp");
+            mShareActionProvider.setShareIntent(myShareIntent);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    // Call to update the share intent
+    private void setShareIntent(Intent shareIntent) {
+        if (mShareActionProvider != null) {
+            mShareActionProvider.setShareIntent(shareIntent);
+        }
     }
 
     @Override
@@ -110,13 +153,29 @@ public class ForecastFragment extends Fragment {
 
         listView.setAdapter(adapter);*/
 
-        new FetchWeatherTask().execute(DEFAULT_POSTCODE);
+        sendWeatherRequest();
 
         return view;
     }
 
+    private String getLocationFromPreferences() {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        return sharedPref.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+    }
+
+    private String getTemperatureUnitsFromPreferences() {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+        return sharedPref.getString(getString(R.string.pref_temperature_units_key),
+                getString(R.string.pref_temperature_units_default));
+    }
+
+    private void sendWeatherRequest(){
+        new FetchWeatherTask().execute(getLocationFromPreferences());
+    }
+
     // Uses AsyncTask to create a task away from the main UI thread. This task takes a
-    // URL string and uses it to create an HttpUrlConnection. Once the connection
+    // URL string and uses it to create an HttpUrlConnection. Ogence the connection
     // has been established, the AsyncTask downloads the contents of the webpage as
     // an InputStream. Finally, the InputStream is converted into a string, which is
     // displayed in the UI by the AsyncTask's onPostExecute method.
@@ -127,6 +186,7 @@ public class ForecastFragment extends Fragment {
         @Override
         protected String doInBackground(String... urls) {
             String url = getUriBuilder().appendQueryParameter("q", urls[0]).build().toString();
+
             //Log.v("Url to download: ", url);
             downloadUrl(url);
             return forecastJsonStr;
@@ -220,9 +280,19 @@ public class ForecastFragment extends Fragment {
 
                     if (weather == null) weather = "n/a";
 
-                    newForecastResults[i] = day + " - " + weather + " - " +
-                            ((max > -200)?Math.round(max):"-") + "/" +
-                            ((min > -200)?Math.round(min):"-");
+                    switch (getTemperatureUnitsFromPreferences()) {
+                        case "imperial":
+                            newForecastResults[i] = day + " - " + weather + " - " +
+                                    ((max > -200)?Math.round(max*1.8+32):"-") + "/" +
+                                    ((min > -200)?Math.round(min*1.8+32):"-"); break;
+                        case "metric":
+                            newForecastResults[i] = day + " - " + weather + " - " +
+                                    ((max > -200)?Math.round(max):"-") + "/" +
+                                    ((min > -200)?Math.round(min):"-"); break;
+                        default:
+                            newForecastResults[i] = day + " - " + weather + " - " + "-/-"; break;
+                    }
+
                 }
             }
             updateWeather();
