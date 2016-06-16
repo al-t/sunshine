@@ -2,12 +2,16 @@ package ru.javabreeze.android.sunshine.app;
 
 import android.content.Intent;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ActionProvider;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +36,7 @@ public class DetailActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.detail, menu);
+
         return true;
     }
 
@@ -60,6 +65,7 @@ public class DetailActivity extends AppCompatActivity {
         private static String forecast;
 
         public PlaceholderFragment() {
+            setHasOptionsMenu(true);
         }
 
         @Override
@@ -72,7 +78,29 @@ public class DetailActivity extends AppCompatActivity {
             TextView textView = (TextView)rootView.findViewById(R.id.forecast_text);
             textView.setText(forecast);
 
+
+
             return rootView;
+        }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            inflater.inflate(R.menu.detail_fragment, menu);
+            MenuItem menuItem = menu.findItem(R.id.menu_item_share);
+            ShareActionProvider mShareActionProvider =
+                    (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+            if (mShareActionProvider != null) {
+                mShareActionProvider.setShareIntent(createShareForecastIntent());
+            } else {
+                Log.d(Constants.LOG_TAG, "Share Action Provider is null?");
+            }
+        }
+
+        private Intent createShareForecastIntent() {
+            return new Intent(Intent.ACTION_SEND)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET)
+                    .setType("text/plain")
+                    .putExtra(Intent.EXTRA_TEXT, forecast + Constants.FORECAST_SHARE_HASHTAG);
         }
     }
 }

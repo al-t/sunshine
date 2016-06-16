@@ -49,7 +49,7 @@ public class ForecastFragment extends Fragment {
     //private final String API_KEY = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
 
     private ArrayAdapter<String> adapter;
-    private ActionProvider mShareActionProvider;
+
 
     private Uri.Builder getUriBuilder() {
         return new Uri.Builder().scheme("http")
@@ -86,12 +86,6 @@ public class ForecastFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.forecastfragment, menu);
-
-        // Locate MenuItem with ShareActionProvider
-        MenuItem item = menu.findItem(R.id.menu_item_share);
-
-        // Fetch and store ShareActionProvider
-        mShareActionProvider = (ActionProvider) MenuItemCompat.getActionProvider(item);
     }
 
 
@@ -118,21 +112,11 @@ public class ForecastFragment extends Fragment {
                 Toast.makeText(getContext(), getString(R.string.no_map_application),
                         Toast.LENGTH_SHORT).show();
             }
-        } else if (id == R.id.menu_item_share) {
-            Intent myShareIntent = new Intent(Intent.ACTION_SEND);
-            myShareIntent.setType("text/plain");
-            myShareIntent.putExtra(Intent.EXTRA_STREAM, newForecastResults[0] + " #SunshineApp");
-            mShareActionProvider.setShareIntent(myShareIntent);
         }
         return super.onOptionsItemSelected(item);
     }
 
-    // Call to update the share intent
-    private void setShareIntent(Intent shareIntent) {
-        if (mShareActionProvider != null) {
-            mShareActionProvider.setShareIntent(shareIntent);
-        }
-    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

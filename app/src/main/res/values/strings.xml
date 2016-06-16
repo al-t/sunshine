@@ -19,5 +19,6 @@
     <string name="pref_temperature_units_default">metric</string>
     <string name="show_location_on_map">Show Location on Map</string>
     <string name="no_map_application">Could nof find map application installed on the device!</string>
+    <string name="share_title">Share</string>
 
 </resources>
