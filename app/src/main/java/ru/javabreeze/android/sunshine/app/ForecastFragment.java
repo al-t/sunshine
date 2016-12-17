@@ -297,10 +297,10 @@ public class ForecastFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                /*Log.v(Constants.LOG_TAG, "Clicked item: " + position + " - "
-                        + newForecastResults[position]);*/
-                /*Toast.makeText(getContext(), newForecastResults[position], Toast.LENGTH_SHORT)
-                        .show();*/
+                Log.v(Constants.LOG_TAG, "Clicked item: " + position + " - "
+                        + newForecastResults[position]);
+                Toast.makeText(getContext(), newForecastResults[position], Toast.LENGTH_SHORT)
+                        .show();
                 Intent intent = new Intent(getContext(), DetailActivity.class)
                         .putExtra(Constants.FORECAST, newForecastResults[position]);
                 startActivity(intent);
