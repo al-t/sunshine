@@ -7,4 +7,5 @@ public class Constants {
     public static final String LOG_TAG = "Sunshine App";
     public static final String FORECAST = "FORECAST";
     public static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
+    public static final boolean DEBUG = true;
 }
