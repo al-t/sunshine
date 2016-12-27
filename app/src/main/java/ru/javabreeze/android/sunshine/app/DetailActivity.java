@@ -1,7 +1,10 @@
 package ru.javabreeze.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.view.ActionProvider;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
@@ -18,7 +21,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity implements android.app.LoaderManager.LoaderCallbacks<Object> {
+
+    private static final int DETAIL_FORECAST_LOADER = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +34,7 @@ public class DetailActivity extends AppCompatActivity {
                     .add(R.id.detail_container, new PlaceholderFragment())
                     .commit();
         }
+        getLoaderManager().initLoader(DETAIL_FORECAST_LOADER, null, this);
     }
 
 
@@ -57,6 +63,31 @@ public class DetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onLoadFinished(Loader<Object> loader, Object data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Object> loader) {
+
+    }
+
+    @Override
+    public Loader<Object> onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -73,7 +104,11 @@ public class DetailActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
 
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-            forecast = getActivity().getIntent().getStringExtra(Constants.FORECAST);
+            Intent intent = getActivity().getIntent();
+            if (intent != null) {
+                forecast = intent.getDataString();
+            }
+            //forecast = getActivity().getIntent().getStringExtra(Constants.FORECAST);
             Log.v(Constants.LOG_TAG, "Forecast: " + forecast);
             TextView textView = (TextView)rootView.findViewById(R.id.forecast_text);
             textView.setText(forecast);
