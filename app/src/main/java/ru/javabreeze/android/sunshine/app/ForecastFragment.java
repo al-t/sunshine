@@ -162,7 +162,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onStart() {
         super.onStart();
-        updateWeather();
     }
 
     private String getLocationFromPreferences() {
@@ -177,138 +176,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 getString(R.string.pref_temperature_units_default));
     }
 
-    private void sendWeatherRequest(){
-        new FetchWeatherTask(getActivity()).execute(getLocationFromPreferences());
-    }
-
-    // Uses AsyncTask to create a task away from the main UI thread. This task takes a
-    // URL string and uses it to create an HttpUrlConnection. Ogence the connection
-    // has been established, the AsyncTask downloads the contents of the webpage as
-    // an InputStream. Finally, the InputStream is converted into a string, which is
-    // displayed in the UI by the AsyncTask's onPostExecute method.
-//    private class FetchWeatherTask extends AsyncTask<String, Void, String> {
-//
-//        String forecastJsonStr = null;
-//
-//        @Override
-//        protected String doInBackground(String... urls) {
-//            String url = getUriBuilder().appendQueryParameter("q", urls[0]).build().toString();
-//
-//            //Log.v("Url to download: ", url);
-//            downloadUrl(url);
-//            return forecastJsonStr;
-//        }
-//
-//        private void downloadUrl(String stringUrl) {
-//            HttpURLConnection urlConnection = null;
-//            BufferedReader reader = null;
-//
-//            try {
-//                // Construct the URL for the OpenWeatherMap query
-//                // Possible parameters are avaiable at OWM's forecast API page, at
-//                // http://openweathermap.org/API#forecast
-//
-//                URL url = new URL(stringUrl);
-//
-//                //Log.v(Constants.LOG_TAG, "Weather Url: " +stringUrl);
-//
-//                // Create the request to OpenWeatherMap, and open the connection
-//                urlConnection = (HttpURLConnection) url.openConnection();
-//                urlConnection.setRequestMethod("GET");
-//                urlConnection.connect();
-//
-//                // Read the input stream into a String
-//                InputStream inputStream = urlConnection.getInputStream();
-//                StringBuffer buffer = new StringBuffer();
-//                if (inputStream == null) {
-//                    // Nothing to do.
-//                    return;
-//                }
-//                reader = new BufferedReader(new InputStreamReader(inputStream));
-//
-//                String line;
-//                while ((line = reader.readLine()) != null) {
-//                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-//                    // But it does make debugging a *lot* easier if you print out the completed
-//                    // buffer for debugging.
-//                    buffer.append(line + "\n");
-//                }
-//
-//                if (buffer.length() == 0) {
-//                    // Stream was empty.  No point in parsing.
-//                    return;
-//                }
-//                forecastJsonStr = buffer.toString();
-//                //Log.v(LOG_TAG, forecastJsonStr);
-//
-//            } catch (IOException e) {
-//                Log.e("PlaceholderFragment", "Error ", e);
-//                // If the code didn't successfully get the weather data, there's no point in attemping
-//                // to parse it.
-//                return;
-//            } finally {
-//                if (urlConnection != null) {
-//                    urlConnection.disconnect();
-//                }
-//                if (reader != null) {
-//                    try {
-//                        reader.close();
-//                    } catch (final IOException e) {
-//                        Log.e("PlaceholderFragment", "Error closing stream", e);
-//                    }
-//                }
-//            }
-//        }
-//
-//        // onPostExecute displays the results of the AsyncTask.
-//        @Override
-//        protected void onPostExecute(String result) {
-//            if (result != null) {
-//                newForecastResults = new String[7];
-//
-//                for (int i = 0; i < newForecastResults.length; i++) {
-//                    String weather = null;
-//                    double min = -200, max = -200;
-//                    try {
-//                        //time = WeatherDataParser.getTime(result, i);
-//                        weather = WeatherDataParser.getWeatherConditionForDay(result, i);
-//                        min = WeatherDataParser.getMinTemperatureForDay(result, i);
-//                        max = WeatherDataParser.getMaxTemperatureForDay(result, i);
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                    //create a Gregorian Calendar, which is in current date
-//                    GregorianCalendar gc = new GregorianCalendar();
-//                    //add i dates to current date of calendar
-//                    gc.add(GregorianCalendar.DATE, i);
-//                    //get that date, format it, and "save" it on variable day
-//                    Date time = gc.getTime();
-//                    SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE, MMM d");
-//                    String day = shortenedDateFormat.format(time);
-//
-//                    if (weather == null) weather = "n/a";
-//
-//                    switch (getTemperatureUnitsFromPreferences()) {
-//                        case "imperial":
-//                            newForecastResults[i] = day + " - " + weather + " - " +
-//                                    ((max > -200)?Math.round(max*1.8+32):"-") + "/" +
-//                                    ((min > -200)?Math.round(min*1.8+32):"-"); break;
-//                        case "metric":
-//                            newForecastResults[i] = day + " - " + weather + " - " +
-//                                    ((max > -200)?Math.round(max):"-") + "/" +
-//                                    ((min > -200)?Math.round(min):"-"); break;
-//                        default:
-//                            newForecastResults[i] = day + " - " + weather + " - " + "-/-"; break;
-//                    }
-//
-//                }
-//            }
-//            updateWeather();
-//        }
-//
-//
-//    }
 
     private void updateWeather() {
 
@@ -351,6 +218,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 null,
                 null,
                 sortOrder);
+
     }
 
     @Override
@@ -361,5 +229,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         adapter.swapCursor(null);
+    }
+
+    public void onLocationChanged() {
+        updateWeather();
+        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
 }
