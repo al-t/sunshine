@@ -27,12 +27,14 @@ import java.util.Arrays;
 public class MainActivity extends AppCompatActivity {
 
     private String mLocation;
+    private boolean isMetric;
     private final String FORECASTFRAGMENT_TAG = "ForecastFragment tag";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mLocation = Utility.getPreferredLocation(this);
+        isMetric = Utility.isMetric(this);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -69,15 +71,16 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         String newLocation = Utility.getPreferredLocation(this);
-        if (newLocation != null && !newLocation.equals(mLocation)) {
+        Boolean newIsMetric = Utility.isMetric(this);
+        if ((newLocation != null && !newLocation.equals(mLocation)) ||
+                !newIsMetric.equals(isMetric)) {
             ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentByTag
                     (FORECASTFRAGMENT_TAG);
             if (null != ff) {
-                ff.onLocationChanged();
+                ff.onSettingsChanged();
             }
             mLocation = newLocation;
+            isMetric = newIsMetric;
         }
     }
-
-
 }

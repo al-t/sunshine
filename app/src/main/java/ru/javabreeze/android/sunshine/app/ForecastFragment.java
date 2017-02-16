@@ -181,7 +181,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
         FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
         String location = Utility.getPreferredLocation(getActivity());
-        weatherTask.execute(location);/*
+        if (Constants.DEBUG) Log.v(LOG_TAG, "location: " + location);
+        weatherTask.execute(location);
+        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+
+        /*
         adapter = new ArrayAdapter<>(getActivity(),
                 R.layout.list_item_forecast, R.id.list_item_forecast_textview, newForecastResults);
 
@@ -231,7 +235,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         adapter.swapCursor(null);
     }
 
-    public void onLocationChanged() {
+    public void onSettingsChanged() {
         updateWeather();
         getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }

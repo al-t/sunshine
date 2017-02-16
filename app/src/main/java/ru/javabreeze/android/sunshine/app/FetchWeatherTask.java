@@ -153,15 +153,21 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
             JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
             String cityName = cityJson.getString(OWM_CITY_NAME);
+            if (Constants.DEBUG) Log.v(LOG_TAG, "cityName: " + cityName);
 
             JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
             double cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
             double cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
+            if (Constants.DEBUG) {
+                Log.v(LOG_TAG, "cityLatitude: " + cityLatitude + ", " +
+                    "cityLongitude: " + cityLongitude);
+            }
 
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
+            if (Constants.DEBUG) Log.v(LOG_TAG, "locationId: " + locationId);
 
             // Insert the new weather information into the database
-            Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
+            Vector<ContentValues> cVVector = new Vector<>(weatherArray.length());
 
             // OWM returns daily forecasts based upon the local time of the city that is being
             // asked for, which means that we need to know the GMT offset to translate this data
@@ -230,7 +236,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 weatherValues.put(WeatherEntry.COLUMN_MIN_TEMP, low);
                 weatherValues.put(WeatherEntry.COLUMN_SHORT_DESC, description);
                 weatherValues.put(WeatherEntry.COLUMN_WEATHER_ID, weatherId);
-
                 cVVector.add(weatherValues);
             }
 
@@ -312,18 +317,20 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                     .build();
 
             URL url = new URL(builtUri.toString());
-            //Log.v(LOG_TAG, url.toString());
+            Log.v(LOG_TAG, url.toString());
 
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
+
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
+            if (Constants.DEBUG) Log.v(LOG_TAG, "The connection is opened.");
 
             // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
-                // Nothing to do.
+                if (Constants.DEBUG) Log.v(LOG_TAG, "inputStream is null!");
                 return null;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -337,15 +344,15 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             }
 
             if (buffer.length() == 0) {
-                // Stream was empty.  No point in parsing.
+                if (Constants.DEBUG) Log.v(LOG_TAG, "The stream is empty!");
                 return null;
             }
             forecastJsonStr = buffer.toString();
+            if (Constants.DEBUG) Log.v(LOG_TAG, "forecastJsonStr: " + forecastJsonStr);
             getWeatherDataFromJson(forecastJsonStr, locationQuery);
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attemping
-            // to parse it.
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
