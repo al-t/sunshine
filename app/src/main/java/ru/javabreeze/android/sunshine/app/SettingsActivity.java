@@ -1,17 +1,23 @@
 package ru.javabreeze.android.sunshine.app;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
@@ -29,6 +35,7 @@ public class SettingsActivity extends PreferenceActivity
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_location_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_temperature_units_key)));
     }
+
 
     /**
      * Attaches a listener so the summary is always updated with the preference value.
@@ -86,5 +93,7 @@ public class SettingsActivity extends PreferenceActivity
             addPreferencesFromResource(R.xml.preferences);
         }
     }
+
+
 
 }

@@ -12,11 +12,19 @@ import android.widget.TextView;
 
 import ru.javabreeze.android.sunshine.app.data.WeatherContract;
 
+import static ru.javabreeze.android.sunshine.app.Constants.LOG_TAG;
+
 /**
  * Created by Алексей on 18.12.2016.
  */
 
 class ForecastAdapter extends CursorAdapter {
+
+    private final static String LOG_TAG = ForecastAdapter.class.getName();
+
+    private boolean mUseTodayLayout;
+
+
     ForecastAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
@@ -26,9 +34,16 @@ class ForecastAdapter extends CursorAdapter {
     private static final int TODAY_VIEW_TYPE = 0;
     private static final int FUTURE_DAY_VIEW_TYPE = 1;
 
+    public void setUseTodayLayout(boolean useTodayLayout) {
+        mUseTodayLayout = useTodayLayout;
+    }
+
     @Override
     public int getItemViewType(int position) {
-        return (position == 0) ? TODAY_VIEW_TYPE : FUTURE_DAY_VIEW_TYPE;
+        if (Constants.DEBUG) {
+            //Log.v(LOG_TAG, "mUseTodayLayout: " + mUseTodayLayout);
+        }
+        return (position == 0 && mUseTodayLayout) ? TODAY_VIEW_TYPE : FUTURE_DAY_VIEW_TYPE;
     }
 
     @Override
@@ -68,7 +83,15 @@ class ForecastAdapter extends CursorAdapter {
         String lowTemp = Utility.formatTemperature(context, cursor.getDouble(ForecastFragment
                 .COL_WEATHER_MIN_TEMP), isMetric);
 
-        viewHolder.iconView.setImageResource(R.drawable.ic_launcher);
+        int viewType = getItemViewType(cursor.getPosition());
+        int iconRes;
+        if (viewType == TODAY_VIEW_TYPE) {
+            iconRes = Utility.getResourceDetailConditionIcon(forecast);
+        } else {
+            iconRes = Utility.getResourceConditionIcon(forecast);
+        }
+
+        viewHolder.iconView.setImageResource(iconRes);
         viewHolder.dateView.setText(date);
         viewHolder.descriptionView.setText(forecast);
         viewHolder.highTempView.setText(hiTemp);

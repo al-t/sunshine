@@ -3,47 +3,55 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-                android:gravity="center">
+                android:background="@color/sunshine_blue"
+                android:paddingTop="@dimen/activity_horizontal_margin"
+                android:paddingBottom="@dimen/activity_horizontal_margin">
     <RelativeLayout
         android:id="@+id/date_and_temperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/activity_vertical_margin">
+        android:layout_marginLeft="60dp"
+        android:layout_marginStart="60dp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/list_item_date_textview"
             tools:text="Today, June 24"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
+            android:textColor="@android:color/white"
+            android:fontFamily="sans-serif-condensed"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/list_item_high_textview"
-            android:text="21º"
+            tools:text="21º"
+            android:fontFamily="sans-serif-light"
             android:layout_below="@id/list_item_date_textview"
-            android:layout_marginTop="16dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:layout_centerHorizontal="true"/>
+            android:textSize="72sp"
+            android:textColor="@android:color/white"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/list_item_low_textview"
-            android:text="8º"
+            tools:text="8º"
+            android:fontFamily="sans-serif-light"
+            android:textSize="36sp"
+            android:textColor="@android:color/white"
             android:layout_below="@id/list_item_high_textview"
-            android:layout_marginTop="8dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:layout_centerHorizontal="true"/>
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"/>
     </RelativeLayout>
     <RelativeLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/date_and_temperature">
+        android:layout_toRightOf="@id/date_and_temperature"
+        android:layout_centerInParent="true">
         <ImageView
             android:id="@+id/list_item_icon"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:src="@drawable/ic_launcher"
-            android:layout_marginLeft="16dp"
+            tools:src="@drawable/art_clear"
+            android:layout_centerHorizontal="true"
             />
         <TextView
             android:id="@+id/list_item_forecast_textview"
@@ -51,7 +59,11 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_below="@id/list_item_icon"
-            android:text="Clear"/>
+            tools:text="Clear"
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            android:textAppearance="?android:textAppearanceLarge"/>
     </RelativeLayout>
 
 

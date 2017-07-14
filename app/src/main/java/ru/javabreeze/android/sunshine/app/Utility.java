@@ -7,6 +7,7 @@ package ru.javabreeze.android.sunshine.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -17,9 +18,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-class Utility {
+public class Utility {
     private final static String LOG_TAG = Utility.class.getSimpleName();
-    static String getPreferredLocation(Context context) {
+    public static String getPreferredLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(context.getString(R.string.pref_location_key),
                 context.getString(R.string.pref_location_default));
@@ -47,7 +48,7 @@ class Utility {
         Date today = new Date();
         long diff = Math.abs(today.getTime() - date.getTime());
         long dayDiff = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
-        if (Constants.DEBUG) Log.v(LOG_TAG, "dayDiff: " + dayDiff);
+        //if (Constants.DEBUG) Log.v(LOG_TAG, "dayDiff: " + dayDiff);
         String resultDate;
         if (DateUtils.isToday(date.getTime())) {
             resultDate = context.getString(R.string.today) + ", " + new SimpleDateFormat("MMMM " +
@@ -79,5 +80,37 @@ class Utility {
     static String formatWindDirection(Float degrees) {
         String directions[] = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
         return directions[ (int)Math.round((  ((double)degrees % 360) / 45)) % 8 ];
+    }
+
+    static int getResourceConditionIcon(String condition) {
+        int iconRes;
+        switch (condition.toLowerCase()) {
+            case ("clear"): iconRes = R.drawable.ic_clear; break;
+            case ("clouds"): iconRes = R.drawable.ic_cloudy; break;
+            case ("fog"): iconRes = R.drawable.ic_fog; break;
+            case ("light clouds"): iconRes = R.drawable.ic_light_clouds; break;
+            case ("light rain"): iconRes = R.drawable.ic_light_rain; break;
+            case ("rain"): iconRes = R.drawable.ic_rain; break;
+            case ("snow"): iconRes = R.drawable.ic_snow; break;
+            case ("storm"): iconRes = R.drawable.ic_storm; break;
+            default: iconRes = R.drawable.ic_launcher;
+        }
+        return iconRes;
+    }
+
+    static int getResourceDetailConditionIcon(String condition) {
+        int iconRes;
+        switch (condition.toLowerCase()) {
+            case ("clear"): iconRes = R.drawable.art_clear; break;
+            case ("clouds"): iconRes = R.drawable.art_clouds; break;
+            case ("fog"): iconRes = R.drawable.art_fog; break;
+            case ("light clouds"): iconRes = R.drawable.art_light_clouds; break;
+            case ("light rain"): iconRes = R.drawable.art_light_rain; break;
+            case ("rain"): iconRes = R.drawable.art_rain; break;
+            case ("snow"): iconRes = R.drawable.art_snow; break;
+            case ("storm"): iconRes = R.drawable.art_storm; break;
+            default: iconRes = R.drawable.ic_launcher;
+        }
+        return iconRes;
     }
 }
