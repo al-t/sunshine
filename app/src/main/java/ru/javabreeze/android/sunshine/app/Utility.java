@@ -33,7 +33,7 @@ public class Utility {
                 .equals(context.getResources().getStringArray(R.array.temperature_units_names)[0]);
     }
 
-    static String formatTemperature(Context context, double temperature, boolean isMetric) {
+    public static String formatTemperature(Context context, double temperature, boolean isMetric) {
         double temp;
         if (!isMetric) {
             temp = 9 * temperature / 5 + 32;
@@ -41,6 +41,10 @@ public class Utility {
             temp = temperature;
         }
         return context.getString(R.string.temperature_format, temp);
+    }
+
+    public static String formatTemperature(Context context, double temperature) {
+        return formatTemperature(context, temperature, isMetric(context));
     }
 
     static String formatDate(long dateInMillis, Context context) {
@@ -82,7 +86,7 @@ public class Utility {
         return directions[ (int)Math.round((  ((double)degrees % 360) / 45)) % 8 ];
     }
 
-    static int getResourceConditionIcon(String condition) {
+    public static int getResourceConditionIcon(String condition) {
         int iconRes;
         switch (condition.toLowerCase()) {
             case ("clear"): iconRes = R.drawable.ic_clear; break;

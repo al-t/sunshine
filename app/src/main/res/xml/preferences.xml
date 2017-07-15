@@ -13,5 +13,8 @@
         android:entries="@array/temperature_units_names"
         android:entryValues="@array/temperature_units_names"
         />
-
+    <CheckBoxPreference
+        android:key="@string/pref_notifications_key"
+        android:title="@string/pref_notifications_title"
+        android:defaultValue="true"/>
 </PreferenceScreen>
