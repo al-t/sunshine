@@ -109,30 +109,44 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_refresh) {
+        if /*(id == R.id.action_refresh) {
             updateWeather();
             return true;
-        } else if (id == R.id.action_settings) {
+        } else if*/ (id == R.id.action_settings) {
             Intent intent = new Intent(getContext(), SettingsActivity.class);
             startActivity(intent);
         } else if (id == R.id.action_show_location_on_map) {
-            Uri location = Uri.parse("geo:0,0?q=" + getLocationFromPreferences());
-            Intent showOnMap = new Intent(Intent.ACTION_VIEW, location);
-            PackageManager packageManager = getActivity().getPackageManager();
-            List activities = packageManager.queryIntentActivities(showOnMap,
-                    PackageManager.MATCH_DEFAULT_ONLY);
-            boolean isIntentSafe = activities.size() > 0;
-            if (isIntentSafe) {
-                startActivity(showOnMap);
-            } else {
-                Toast.makeText(getContext(), getString(R.string.no_map_application),
-                        Toast.LENGTH_SHORT).show();
-            }
+
+            openPreferredLocationInMap();
+
+
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private void openPreferredLocationInMap() {
+        if (adapter != null) {
+            Cursor cursor = adapter.getCursor();
+            if (cursor != null) {
+                cursor.moveToPosition(0);
+                String latitude = cursor.getString(COL_COORD_LAT);
+                String longitude = cursor.getString(COL_COORD_LONG);
 
+                Uri uri = Uri.parse("geo:" + latitude + "," + longitude);
+                Intent showOnMap = new Intent(Intent.ACTION_VIEW, uri);
+                PackageManager packageManager = getActivity().getPackageManager();
+                List activities = packageManager.queryIntentActivities(showOnMap,
+                        PackageManager.MATCH_DEFAULT_ONLY);
+                boolean isIntentSafe = activities.size() > 0;
+                if (isIntentSafe) {
+                    startActivity(showOnMap);
+                } else {
+                    Toast.makeText(getContext(), getString(R.string.no_map_application),
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

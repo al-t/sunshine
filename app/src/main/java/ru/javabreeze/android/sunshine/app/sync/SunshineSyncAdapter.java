@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.Vector;
 
 import ru.javabreeze.android.sunshine.app.BuildConfig;
@@ -162,6 +163,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
     }
+
 
     /**
      * Helper method to have the sync adapter sync immediately
@@ -361,6 +363,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                         ContentValues[cVVector.size()]);
                 inserted = getContext().getContentResolver().bulkInsert(uri, values);
             }
+
+            // delete data older than today
+            getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                    WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
+                    new String [] {Long.toString(dayTime.setJulianDay(julianStartDay - 1))});
 
             Log.d(LOG_TAG, "SunshineService Complete. " + inserted + " Inserted");
 
